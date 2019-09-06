@@ -3,9 +3,11 @@ package ru.levelp;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.*;
 
 public class Server {
     public static final int SERVER_PORT = 9994;
+    private static final List<ServerSocket> serverSockets = Collections.synchronizedList(new ArrayList<>());
 
     public static void main(String[] args) throws Exception {
         ServerSocket server = new ServerSocket(SERVER_PORT);
@@ -15,10 +17,18 @@ public class Server {
             new Thread(() -> {
                 try {
                     processClient(client);
+                    createServerSocket(server);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }).start();
+        }
+    }
+    private static void createServerSocket(ServerSocket someServerSocket) {
+        synchronized (serverSockets) {
+            if (!serverSockets.contains(someServerSocket)) {
+                serverSockets.add(someServerSocket);
+            }
         }
     }
 
@@ -30,15 +40,12 @@ public class Server {
                 try (BufferedReader input = new BufferedReader(
                         new InputStreamReader(
                                 client.getInputStream()))) {
-                    output.write("Enter a:\n");
+                    output.write("Hello dear, enter your nickname:\n");
                     output.flush();
-                    double a = Double.parseDouble(input.readLine());
+                    String nickname = input.readLine();
 
-                    output.write("Enter b:\n");
-                    output.flush();
-                    double b = Double.parseDouble(input.readLine());
 
-                    output.write("Result: " + (a + b) + "\n");
+                    output.write("Welcome to chat room: " + nickname + "\n");
                     output.flush();
                 }
             }
