@@ -29,6 +29,7 @@ public class Server {
             if (!serverSockets.contains(someServerSocket)) {
                 serverSockets.add(someServerSocket);
             }
+            System.out.println("User create");
         }
     }
 
