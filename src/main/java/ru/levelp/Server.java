@@ -39,8 +39,9 @@ public class Server {
         synchronized (serverSockets) {
             if (!serverSockets.contains(someConnection)) {
                 serverSockets.add(someConnection);
+            } else{
+                System.out.println("User connection");
             }
-            System.out.println("User connected");
         }
     }
 
@@ -65,8 +66,6 @@ public class Server {
                     output.write("Welcome to chat room: " + nickname + "\n");
                     output.flush();
 
-                    output.write(nickname + "\n");
-                    output.flush();
                 }
             }
         } catch (

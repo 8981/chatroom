@@ -27,7 +27,6 @@ public class Client {
             output.write(keyboardInput.readLine() + "\n");
             output.flush();
 
-
             System.out.println(input.readLine());
 
         } finally {
