@@ -8,6 +8,9 @@ import java.util.*;
 public class Server {
     public static final int SERVER_PORT = 9994;
     private static final List<ServerSocket> serverSockets = Collections.synchronizedList(new ArrayList<>());
+    private static final List<ServerSocket> userName = Collections.synchronizedList(new ArrayList<>());
+
+
 
     public static void main(String[] args) throws Exception {
         ServerSocket server = new ServerSocket(SERVER_PORT);
@@ -17,19 +20,27 @@ public class Server {
             new Thread(() -> {
                 try {
                     processClient(client);
-                    createServerSocket(server);
+                    connectionServer(server);
+                    chatRoom(server);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }).start();
         }
     }
-    private static void createServerSocket(ServerSocket someServerSocket) {
+
+    private static void connectionServer(ServerSocket someConnection) {
         synchronized (serverSockets) {
-            if (!serverSockets.contains(someServerSocket)) {
-                serverSockets.add(someServerSocket);
+            if (!serverSockets.contains(someConnection)) {
+                serverSockets.add(someConnection);
             }
-            System.out.println("User create");
+            System.out.println("User connected");
+        }
+    }
+
+    private static void chatRoom(ServerSocket someChat) {
+        for (int i = 0; i < userName.size(); i++) {
+            someChat = userName.get(i);
         }
     }
 
@@ -45,8 +56,10 @@ public class Server {
                     output.flush();
                     String nickname = input.readLine();
 
-
                     output.write("Welcome to chat room: " + nickname + "\n");
+                    output.flush();
+
+                    output.write(nickname + "\n");
                     output.flush();
                 }
             }
