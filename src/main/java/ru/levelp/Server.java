@@ -50,28 +50,30 @@ public class Server {
 
     private static void messageClient(Socket someMessage) throws IOException {
         for (int i = 0; i < connections.size(); i++) {
-            try {
-                try (Writer output = new OutputStreamWriter(
-                        new BufferedOutputStream(
-                                someMessage.getOutputStream()))) {
-                    try (BufferedReader input = new BufferedReader(
-                            new InputStreamReader(
-                                    someMessage.getInputStream()))) {
-                        output.write("You can write message:\n");
-                        output.flush();
-                        String message = input.readLine();
+            while (!connections.contains(i)){
+                try {
+                    try (Writer output = new OutputStreamWriter(
+                            new BufferedOutputStream(
+                                    someMessage.getOutputStream()))) {
+                        try (BufferedReader input = new BufferedReader(
+                                new InputStreamReader(
+                                        someMessage.getInputStream()))) {
+                            output.write("You can write message:\n");
+                            output.flush();
+                            String message = input.readLine();
 
-                        output.write("Message: " + message + "\n");
-                        output.flush();
+                            output.write("Message: " + message + "\n");
+                            output.flush();
+                        }
                     }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                someMessage.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    someMessage.close();
 
-                System.out.println(connections.get(i));
-            }
+                    System.out.println(connections.get(i));
+                }
+            } break;
         }
     }
 
