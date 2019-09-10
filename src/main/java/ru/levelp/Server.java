@@ -4,7 +4,6 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -27,10 +26,14 @@ public class Server {
                         e.printStackTrace();
                     }
                     connectionServer(server);
-                    connectionClient(server);
+                    try {
+                        messageClient(client);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 });
             }
-        }finally {
+        } finally {
             exec.shutdown();
         }
     }
@@ -39,15 +42,36 @@ public class Server {
         synchronized (serverSockets) {
             if (!serverSockets.contains(someConnection)) {
                 serverSockets.add(someConnection);
-            } else{
+            } else {
                 System.out.println("User connection");
             }
         }
     }
 
-    private static void connectionClient(ServerSocket someConnectClient) {        //??????????????
-        for (int i = 0; i < connections.size() ; i++) {
-            connections.get(i);
+    private static void messageClient(Socket someMessage) throws IOException {
+        for (int i = 0; i < connections.size(); i++) {
+            try {
+                try (Writer output = new OutputStreamWriter(
+                        new BufferedOutputStream(
+                                someMessage.getOutputStream()))) {
+                    try (BufferedReader input = new BufferedReader(
+                            new InputStreamReader(
+                                    someMessage.getInputStream()))) {
+                        output.write("You can write message:\n");
+                        output.flush();
+                        String message = input.readLine();
+
+                        output.write("Message: " + message + "\n");
+                        output.flush();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                someMessage.close();
+
+                System.out.println(connections.get(i));
+            }
         }
     }
 
