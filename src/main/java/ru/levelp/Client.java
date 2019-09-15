@@ -37,7 +37,7 @@ public class Client {
 
             createThread.submit(() -> {
                 try {
-                    chatWrite(output, input, keyboardInput);
+                    chatWrite(output, keyboardInput);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -48,7 +48,7 @@ public class Client {
         }
     }
 
-    public static void chatWrite(Writer output, BufferedReader input, BufferedReader keyboardInput) throws IOException{
+    public static void chatWrite(Writer output, BufferedReader keyboardInput) throws IOException{
         while (true){
             output.write(keyboardInput.readLine() + "\n");
             output.flush();
