@@ -3,14 +3,13 @@ package ru.levelp;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Server {
     public static final int SERVER_PORT = 9994;
-    private static final List<ServerSocket> serverSockets = Collections.synchronizedList(new ArrayList<>());
-    private static final List<Socket> connections = Collections.synchronizedList(new ArrayList<>());
+    public static final ArrayList<Socket> listUsers = new ArrayList<>();
 
     public static void main(String[] args) throws Exception {
         ServerSocket server = new ServerSocket(SERVER_PORT);
@@ -19,15 +18,10 @@ public class Server {
         try {
             while (true) {
                 Socket client = server.accept();
+                listUsers.add(client);
                 exec.submit(() -> {
                     try {
                         processClient(client);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    connectionServer(server);
-                    try {
-                        messageClient(client);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -35,45 +29,6 @@ public class Server {
             }
         } finally {
             exec.shutdown();
-        }
-    }
-
-    private static void connectionServer(ServerSocket someConnection) {
-        synchronized (serverSockets) {
-            if (!serverSockets.contains(someConnection)) {
-                serverSockets.add(someConnection);
-            } else {
-                System.out.println("User connection");
-            }
-        }
-    }
-
-    private static void messageClient(Socket someMessage) throws IOException {
-        for (int i = 0; i < connections.size(); i++) {
-            while (!connections.contains(i)){
-                try {
-                    try (Writer output = new OutputStreamWriter(
-                            new BufferedOutputStream(
-                                    someMessage.getOutputStream()))) {
-                        try (BufferedReader input = new BufferedReader(
-                                new InputStreamReader(
-                                        someMessage.getInputStream()))) {
-                            output.write("You can write message:\n");
-                            output.flush();
-                            String message = input.readLine();
-
-                            output.write("Message: " + message + "\n");
-                            output.flush();
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    someMessage.close();
-
-                    System.out.println(connections.get(i));
-                }
-            } break;
         }
     }
 
@@ -92,6 +47,22 @@ public class Server {
                     output.write("Welcome to chat room: " + nickname + "\n");
                     output.flush();
 
+                    output.write("You can to write message :\n");
+                    output.flush();
+
+
+                    while (true){
+                        String message = input.readLine();
+
+                        for (Socket user : listUsers) {
+                            Writer userWrite = new OutputStreamWriter(
+                                    new BufferedOutputStream(
+                                            user.getOutputStream()));
+
+                            userWrite.write(nickname + " : " + message + "\n");
+                            userWrite.flush();
+                        }
+                    }
                 }
             }
         } catch (
