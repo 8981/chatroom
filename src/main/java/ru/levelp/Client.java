@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
 public class Client {
 
     public static void main(String[] args) throws Exception {
-        ExecutorService createThread = Executors.newFixedThreadPool(2);
+        ExecutorService exec = Executors.newFixedThreadPool(2);
 
         BufferedReader keyboardInput = new BufferedReader(
                 new InputStreamReader(System.in));
@@ -27,7 +27,7 @@ public class Client {
             output.write(keyboardInput.readLine() + "\n");
             output.flush();
 
-            createThread.submit(() -> {
+            exec.submit(() -> {
                 try {
                     chatRead(input);
                 } catch (IOException e) {
@@ -35,7 +35,7 @@ public class Client {
                 }
             });
 
-            createThread.submit(() -> {
+            exec.submit(() -> {
                 try {
                     chatWrite(output, keyboardInput);
                 } catch (IOException e) {
@@ -45,6 +45,8 @@ public class Client {
 
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            exec.shutdown();
         }
     }
 
