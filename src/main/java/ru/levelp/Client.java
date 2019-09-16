@@ -50,14 +50,14 @@ public class Client {
         }
     }
 
-    public static void chatWrite(Writer output, BufferedReader keyboardInput) throws IOException{
-        while (true){
+    public static void chatWrite(Writer output, BufferedReader keyboardInput) throws IOException {
+        while (true) {
             output.write(keyboardInput.readLine() + "\n");
             output.flush();
         }
     }
 
-    public static void chatRead(BufferedReader input) throws IOException{
+    public static void chatRead(BufferedReader input) throws IOException {
         while (true) {
             System.out.println(input.readLine());
         }

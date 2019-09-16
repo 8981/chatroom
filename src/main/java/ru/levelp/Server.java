@@ -4,8 +4,6 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -20,7 +18,9 @@ public class Server {
         try {
             while (true) {
                 Socket client = server.accept();
-                listUsers.add(client);
+                synchronized (listUsers){
+                    listUsers.add(client);
+                }
                 exec.submit(() -> {
                     try {
                         processClient(client);
@@ -52,17 +52,17 @@ public class Server {
                     output.write("You can to write message :\n");
                     output.flush();
 
-
-                    while (true){
+                    while (true) {
                         String message = input.readLine();
-
                         for (Socket user : listUsers) {
-                            Writer userWrite = new OutputStreamWriter(
-                                    new BufferedOutputStream(
-                                            user.getOutputStream()));
+                            synchronized (listUsers){
+                                Writer userWrite = new OutputStreamWriter(
+                                        new BufferedOutputStream(
+                                                user.getOutputStream()));
 
-                            userWrite.write(nickname + " : " + message + "\n");
-                            userWrite.flush();
+                                userWrite.write(nickname + " : " + message + "\n");
+                                userWrite.flush();
+                            }
                         }
                     }
                 }
@@ -75,4 +75,3 @@ public class Server {
         }
     }
 }
-
