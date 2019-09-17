@@ -11,16 +11,17 @@ public class Server {
     public static final int SERVER_PORT = 9994;
     public static final ArrayList<Socket> listUsers = new ArrayList<>();
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws IOException {
         ServerSocket server = new ServerSocket(SERVER_PORT);
         ExecutorService exec = Executors.newFixedThreadPool(100);
 
         try {
             while (true) {
                 Socket client = server.accept();
-                synchronized (listUsers){
+                synchronized (listUsers) {
                     listUsers.add(client);
                 }
+
                 exec.submit(() -> {
                     try {
                         processClient(client);
@@ -30,6 +31,7 @@ public class Server {
                 });
             }
         } finally {
+
             exec.shutdown();
         }
     }
@@ -55,7 +57,7 @@ public class Server {
                     while (true) {
                         String message = input.readLine();
                         for (Socket user : listUsers) {
-                            synchronized (listUsers){
+                            synchronized (listUsers) {
                                 Writer userWrite = new OutputStreamWriter(
                                         new BufferedOutputStream(
                                                 user.getOutputStream()));
@@ -72,6 +74,7 @@ public class Server {
             e.printStackTrace();
         } finally {
             client.close();
+            listUsers.remove(client);
         }
     }
 }

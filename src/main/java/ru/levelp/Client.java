@@ -8,7 +8,7 @@ import java.util.concurrent.Executors;
 
 public class Client {
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws IOException {
         ExecutorService exec = Executors.newFixedThreadPool(2);
 
         BufferedReader keyboardInput = new BufferedReader(
