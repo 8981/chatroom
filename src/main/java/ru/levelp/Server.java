@@ -3,13 +3,14 @@ package ru.levelp;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Server {
     public static final int SERVER_PORT = 9994;
-    public static final ArrayList<Socket> listUsers = new ArrayList<>();
+    public static final List<Socket> listUsers = new CopyOnWriteArrayList<>();
 
     public static void main(String[] args) throws IOException {
         ServerSocket server = new ServerSocket(SERVER_PORT);
@@ -18,10 +19,7 @@ public class Server {
         try {
             while (true) {
                 Socket client = server.accept();
-                synchronized (listUsers) {
-                    listUsers.add(client);
-                }
-
+                listUsers.add(client);
                 exec.submit(() -> {
                     try {
                         processClient(client);
@@ -31,7 +29,6 @@ public class Server {
                 });
             }
         } finally {
-
             exec.shutdown();
         }
     }
@@ -57,14 +54,12 @@ public class Server {
                     while (true) {
                         String message = input.readLine();
                         for (Socket user : listUsers) {
-                            synchronized (listUsers) {
-                                Writer userWrite = new OutputStreamWriter(
-                                        new BufferedOutputStream(
-                                                user.getOutputStream()));
+                            Writer userWrite = new OutputStreamWriter(
+                                    new BufferedOutputStream(
+                                            user.getOutputStream()));
 
-                                userWrite.write(nickname + " : " + message + "\n");
-                                userWrite.flush();
-                            }
+                            userWrite.write(nickname + " : " + message + "\n");
+                            userWrite.flush();
                         }
                     }
                 }
