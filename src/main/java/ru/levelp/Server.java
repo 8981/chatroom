@@ -64,9 +64,8 @@ public class Server {
                     }
                 }
             }
-        } catch (
-                Exception e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("Client disconnected.");
         } finally {
             client.close();
             listUsers.remove(client);
