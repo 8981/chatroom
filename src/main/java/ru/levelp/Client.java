@@ -5,10 +5,6 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static ru.levelp.Utils.chatRead;
-import static ru.levelp.Utils.chatWrite;
-
-
 public class Client {
 
     public static void main(String[] args) throws IOException {
@@ -53,5 +49,17 @@ public class Client {
         }
     }
 
+    public static void chatWrite(Writer output, BufferedReader keyboardInput) throws IOException {
+        while (true) {
+            output.write(keyboardInput.readLine() + "\n");
+            output.flush();
+        }
+    }
+
+    public static void chatRead(BufferedReader input) throws IOException {
+        while (true) {
+            System.out.println(input.readLine());
+        }
+    }
 
 }
