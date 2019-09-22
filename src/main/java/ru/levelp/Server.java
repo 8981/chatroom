@@ -3,6 +3,10 @@ package ru.levelp;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
@@ -13,28 +17,49 @@ public class Server {
     public static final int SERVER_PORT = 9994;
     public static final List<Socket> listUsers = new CopyOnWriteArrayList<>();
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         ServerSocket server = new ServerSocket(SERVER_PORT);
         ExecutorService exec = Executors.newFixedThreadPool(100);
 
-        try {
-            while (true) {
-                Socket client = server.accept();
-                listUsers.add(client);
-                exec.submit(() -> {
-                    try {
-                        processClient(client);
-                    } catch (IOException e) {
-                        e.printStackTrace();
+        try (Connection connection = DriverManager.getConnection("jdbc:h2:./db");) {
+            try (Statement statement = connection.createStatement()) {
+
+                statement.execute("CREATE TABLE IF NOT EXISTS Clients (" +
+                        "ID INT auto_increment," +
+                        "message VARCHAR(250)" +
+                        ")");
+
+                statement.executeUpdate("INSERT INTO Clients (message)" +
+                        "VALUES ( '" + listUsers + "')");
+
+                try (ResultSet results = statement.executeQuery("SELECT * FROM Clients " +
+                        "WHERE message =  LIMIT 100")) {
+                    while (results.next()) {
+                        String message = results.getString("message");
+                        System.out.println("message" + message);
+
+                        try {
+                            while (true) {
+                                Socket client = server.accept();
+                                listUsers.add(client);
+                                exec.submit(() -> {
+                                    try {
+                                        processClient(client);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                });
+                            }
+                        } finally {
+                            exec.shutdown();
+                        }
                     }
-                });
+                }
             }
-        } finally {
-            exec.shutdown();
         }
     }
 
-    private static void processClient(Socket client) throws IOException {
+    private static void processClient(Socket client) throws Exception {
         try {
             try (Writer output = new OutputStreamWriter(
                     new BufferedOutputStream(
