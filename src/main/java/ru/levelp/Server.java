@@ -3,10 +3,7 @@ package ru.levelp;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
@@ -32,11 +29,9 @@ public class Server {
                 statement.executeUpdate("INSERT INTO Clients (message)" +
                         "VALUES ( '" + listUsers + "')");
 
-                try (ResultSet results = statement.executeQuery("SELECT * FROM Clients " +
-                        "WHERE message =  LIMIT 100")) {
-                    while (results.next()) {
-                        String message = results.getString("message");
-                        System.out.println("message" + message);
+                try (PreparedStatement prepared = connection.prepareStatement("SELECT * FROM Clients " +
+                        "WHERE message = ?  LIMIT 100")) {
+                    prepared.//??????
 
                         try {
                             while (true) {
