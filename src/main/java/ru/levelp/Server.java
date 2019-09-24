@@ -18,80 +18,72 @@ public class Server {
         ServerSocket server = new ServerSocket(SERVER_PORT);
         ExecutorService exec = Executors.newFixedThreadPool(100);
 
-        try (Connection connection = DriverManager.getConnection("jdbc:h2:./db");) {
-            try (Statement statement = connection.createStatement()) {
-
-                statement.execute("CREATE TABLE IF NOT EXISTS Clients (" +
-                        "ID INT auto_increment," +
-                        "message VARCHAR(250)" +
-                        ")");
-
-                statement.executeUpdate("INSERT INTO Clients (message)" +
-                        "VALUES ( '" + listUsers + "')");
-
-                try (PreparedStatement prepared = connection.prepareStatement("SELECT * FROM Clients " +
-                        "WHERE message = ?  LIMIT 100")) {
-                    prepared.//??????
-
-                        try {
-                            while (true) {
-                                Socket client = server.accept();
-                                listUsers.add(client);
-                                exec.submit(() -> {
-                                    try {
-                                        processClient(client);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                });
-                            }
-                        } finally {
-                            exec.shutdown();
-                        }
+        try {
+            while (true) {
+                Socket client = server.accept();
+                listUsers.add(client);
+                exec.submit(() -> {
+                    try {
+                        processClient(client);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                }
+                });
             }
+        } finally {
+            exec.shutdown();
         }
     }
 
     private static void processClient(Socket client) throws Exception {
         try {
-            try (Writer output = new OutputStreamWriter(
-                    new BufferedOutputStream(
-                            client.getOutputStream()))) {
-                try (BufferedReader input = new BufferedReader(
-                        new InputStreamReader(
-                                client.getInputStream()))) {
-                    output.write("Hello dear, enter your nickname:\n");
-                    output.flush();
-                    String nickname = input.readLine();
+            try (Connection connection = DriverManager.getConnection("jdbc:h2:./db")) {
+                try (Statement statement = connection.createStatement()) {
+                    statement.execute("CREATE TABLE IF NOT EXISTS Messages (" +
+                            "textOfMessage VARCHAR(MAX)" + ")");
 
-                    output.write("Welcome to chat room: " + nickname + "\n");
-                    output.flush();
+                    try (Writer output = new OutputStreamWriter(
+                            new BufferedOutputStream(
+                                    client.getOutputStream()))) {
+                        try (BufferedReader input = new BufferedReader(
+                                new InputStreamReader(
+                                        client.getInputStream()))) {
+                            output.write("Hello dear, enter your nickname:\n");
+                            output.flush();
+                            String nickname = input.readLine();
 
-                    output.write("You can to write message :\n");
-                    output.flush();
+                            output.write("Welcome to chat room: " + nickname + "\n");
+                            output.flush();
 
-                    while (true) {
-                        String message = input.readLine();
-                        for (Socket user : listUsers) {
-                            Writer userWrite = new OutputStreamWriter(
-                                    new BufferedOutputStream(
-                                            user.getOutputStream()));
+                            output.write("You can to write message :\n");
+                            output.flush();
 
-                            userWrite.write(nickname + " : " + message + "\n");
-                            userWrite.flush();
+                            while (true) {
+                                String message = input.readLine();
+                                for (Socket user : listUsers) {
+                                    Writer userWrite = new OutputStreamWriter(
+                                            new BufferedOutputStream(
+                                                    user.getOutputStream()));
+                                    statement.execute("INSERT INTO Messages (textOfMessage) VALUES " +
+                                            "('text" + userWrite + "')");
+
+                                    userWrite.write(nickname + " : " + message + "\n");
+                                    userWrite.flush();
+                                }
+                            }
                         }
                     }
+                } catch (Exception e) {
+                    System.out.println("Client disconnected.");
+                } finally {
+                    client.close();
+                    listUsers.remove(client);
                 }
             }
-        } catch (Exception e) {
-            System.out.println("Client disconnected.");
-        } finally {
-            client.close();
-            listUsers.remove(client);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
-
-
 }
