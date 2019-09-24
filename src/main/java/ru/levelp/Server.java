@@ -36,54 +36,50 @@ public class Server {
     }
 
     private static void processClient(Socket client) throws Exception {
-        try {
-            try (Connection connection = DriverManager.getConnection("jdbc:h2:./db")) {
-                try (Statement statement = connection.createStatement()) {
-                    statement.execute("CREATE TABLE IF NOT EXISTS Messages (" +
-                            "textOfMessage VARCHAR(MAX)" + ")");
 
-                    try (Writer output = new OutputStreamWriter(
-                            new BufferedOutputStream(
-                                    client.getOutputStream()))) {
-                        try (BufferedReader input = new BufferedReader(
-                                new InputStreamReader(
-                                        client.getInputStream()))) {
-                            output.write("Hello dear, enter your nickname:\n");
-                            output.flush();
-                            String nickname = input.readLine();
+        try (Connection connection = DriverManager.getConnection("jdbc:h2:./db")) {
+            try (Statement statement = connection.createStatement()) {
+                statement.execute("CREATE TABLE IF NOT EXISTS Messages (" +
+                        "textOfMessage VARCHAR(MAX)" + ")");
 
-                            output.write("Welcome to chat room: " + nickname + "\n");
-                            output.flush();
+                try (Writer output = new OutputStreamWriter(
+                        new BufferedOutputStream(
+                                client.getOutputStream()))) {
+                    try (BufferedReader input = new BufferedReader(
+                            new InputStreamReader(
+                                    client.getInputStream()))) {
+                        output.write("Hello dear, enter your nickname:\n");
+                        output.flush();
+                        String nickname = input.readLine();
 
-                            output.write("You can to write message :\n");
-                            output.flush();
+                        output.write("Welcome to chat room: " + nickname + "\n");
+                        output.flush();
 
-                            while (true) {
-                                String message = input.readLine();
-                                for (Socket user : listUsers) {
-                                    Writer userWrite = new OutputStreamWriter(
-                                            new BufferedOutputStream(
-                                                    user.getOutputStream()));
-                                    statement.execute("INSERT INTO Messages (textOfMessage) VALUES " +
-                                            "('text" + userWrite + "')");
+                        output.write("You can to write message :\n");
+                        output.flush();
 
-                                    userWrite.write(nickname + " : " + message + "\n");
-                                    userWrite.flush();
-                                }
+                        while (true) {
+                            String message = input.readLine();
+                            for (Socket user : listUsers) {
+                                Writer userWrite = new OutputStreamWriter(
+                                        new BufferedOutputStream(
+                                                user.getOutputStream()));
+                                statement.execute("INSERT INTO Messages (textOfMessage) VALUES " +
+                                        "('text" + userWrite + "')");
+
+                                userWrite.write(nickname + " : " + message + "\n");
+                                userWrite.flush();
                             }
                         }
                     }
-                } catch (Exception e) {
-                    System.out.println("Client disconnected.");
-                } finally {
-                    client.close();
-                    listUsers.remove(client);
                 }
+            } catch (Exception e) {
+                System.out.println("Client disconnected.");
+            } finally {
+                client.close();
+                listUsers.remove(client);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }
+
