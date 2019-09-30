@@ -3,7 +3,9 @@ package ru.levelp;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
@@ -60,12 +62,12 @@ public class Server {
 
                         while (true) {
                             String message = input.readLine();
+                            statement.execute("INSERT INTO Messages (textOfMessage) VALUES " +
+                                    "('" + message + "')");
                             for (Socket user : listUsers) {
                                 Writer userWrite = new OutputStreamWriter(
                                         new BufferedOutputStream(
                                                 user.getOutputStream()));
-                                statement.execute("INSERT INTO Messages (textOfMessage) VALUES " +
-                                        "('text" + userWrite + "')");
 
                                 userWrite.write(nickname + " : " + message + "\n");
                                 userWrite.flush();
@@ -82,4 +84,5 @@ public class Server {
         }
     }
 }
+
 
