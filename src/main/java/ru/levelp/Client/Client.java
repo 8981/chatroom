@@ -1,4 +1,6 @@
-package ru.levelp;
+package ru.levelp.Client;
+
+import ru.levelp.Server.Server;
 
 import java.io.*;
 import java.net.Socket;
