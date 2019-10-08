@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+
 public class Client {
 
     public static void main(String[] args) throws IOException {
@@ -50,6 +51,7 @@ public class Client {
             exec.shutdown();
         }
     }
+
 
     public static void chatWrite(Writer output, BufferedReader keyboardInput) throws IOException {
         while (true) {

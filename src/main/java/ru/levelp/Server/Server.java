@@ -12,6 +12,8 @@ import java.util.concurrent.Executors;
 public class Server {
     public static final int SERVER_PORT = 9994;
     public static final List<Socket> listUsers = new CopyOnWriteArrayList<>();
+    public static final List<MessageListener> listeners = new CopyOnWriteArrayList<>();
+
 
     public static void main(String[] args) throws Exception {
         ServerSocket server = new ServerSocket(SERVER_PORT);
@@ -34,6 +36,10 @@ public class Server {
         }
     }
 
+    public void registerMessageListener(MessageListener listener) {
+        listeners.add(listener);
+    }
+
     private static void processClient(Socket client) throws Exception {
         try (Writer output = new OutputStreamWriter(
                 new BufferedOutputStream(
@@ -51,15 +57,13 @@ public class Server {
                 output.write("You can to write message :\n");
                 output.flush();
 
+                UserNotificationListener userNotificationListener = new UserNotificationListener();
+                listeners.add(userNotificationListener);
+
                 while (true) {
                     String message = input.readLine();
-                    for (Socket user : listUsers) {
-                        Writer userWrite = new OutputStreamWriter(
-                                new BufferedOutputStream(
-                                        user.getOutputStream()));
-
-                        userWrite.write(nickname + " : " + message + "\n");
-                        userWrite.flush();
+                    for (MessageListener listener : listeners) {
+                        listener.messageAdded(nickname,message);
                     }
                 }
             }
