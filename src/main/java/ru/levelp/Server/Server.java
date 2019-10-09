@@ -15,7 +15,7 @@ public class Server {
     public static final List<MessageListener> listeners = new CopyOnWriteArrayList<>();
 
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws IOException {
         ServerSocket server = new ServerSocket(SERVER_PORT);
         ExecutorService exec = Executors.newFixedThreadPool(100);
 
@@ -26,7 +26,7 @@ public class Server {
                 exec.submit(() -> {
                     try {
                         processClient(client);
-                    } catch (Exception e) {
+                    } catch (IOException e) {
                         e.printStackTrace();
                     }
                 });
@@ -40,7 +40,7 @@ public class Server {
         listeners.add(listener);
     }
 
-    private static void processClient(Socket client) throws Exception {
+    private static void processClient(Socket client) throws IOException {
         try (Writer output = new OutputStreamWriter(
                 new BufferedOutputStream(
                         client.getOutputStream()))) {
@@ -68,7 +68,7 @@ public class Server {
                 }
             }
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             System.out.println("Client disconnected.");
         } finally {
             client.close();

@@ -12,11 +12,12 @@ public class UserNotificationListener implements MessageListener {
 
     @Override
     public void messageAdded(String nickname, String message) throws IOException {
-        for (Socket UserNotificationListener : listUsers) {
-            Writer userWrite = new OutputStreamWriter(
-                    new BufferedOutputStream(UserNotificationListener.getOutputStream()));
-            userWrite.write(nickname + ": " + message + "\n");
-            userWrite.flush();
+
+            for (Socket user : listUsers) {
+                Writer userWrite = new OutputStreamWriter(
+                        new BufferedOutputStream(user.getOutputStream()));
+                userWrite.write(nickname + ": " + message + "\n");
+                userWrite.flush();
         }
     }
 }
