@@ -13,7 +13,6 @@ public class DataBaseNotificationListener implements DataBaseListener {
                 statement.executeUpdate("INSERT INTO Messages (message) VALUES ('" + message + "')");
 
                 statement.execute("SELECT  message FROM Messages");
-
             }
         }
     }
